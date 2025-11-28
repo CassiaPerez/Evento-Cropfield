@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ViewState, Guest } from './types';
 import { generateGuestPersona } from './services/geminiService';
 import { EventQRCode } from './components/EventQRCode';
 import { CheckInForm } from './components/CheckInForm';
 import { Badge } from './components/Badge';
 import { AttendanceList } from './components/AttendanceList';
-import { FinalScreen } from './components/FinalScreen';
 import { Logo } from './components/Logo';
 import { AdminLogin } from './components/AdminLogin';
 
@@ -14,20 +13,10 @@ const App: React.FC = () => {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [currentGuest, setCurrentGuest] = useState<Guest | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGuestMode, setIsGuestMode] = useState(false);
   
   // Admin State
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-
-  // Check URL params for checkin mode
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('mode') === 'checkin') {
-      setIsGuestMode(true);
-      setView('check-in');
-    }
-  }, []);
 
   const handleSimulateScan = () => {
     setView('check-in');
@@ -59,25 +48,12 @@ const App: React.FC = () => {
   };
 
   const handleCloseBadge = () => {
-    if (isGuestMode) {
-      // If user is on their own phone, show final thank you screen
-      setView('final');
-    } else {
-      // If admin/kiosk, return to landing for next guest
-      setView('landing');
-    }
+    // Return to landing page for the next guest
+    setView('landing');
   };
 
   const handleBackToLanding = () => {
-    // If guest cancels check-in, where do they go? 
-    // Usually stay on form or go to a welcome screen. 
-    // For now, if guest mode, just reset form or show header
-    if (isGuestMode) {
-      // Refresh to ensure clean state or just stay
-      setView('check-in'); 
-    } else {
-      setView('landing');
-    }
+    setView('landing');
   };
   
   const handleAdminAccessRequest = () => {
@@ -114,15 +90,14 @@ const App: React.FC = () => {
 
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => !isGuestMode && setView('landing')}>
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('landing')}>
           <div className="w-10 h-10 bg-white/5 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg border border-white/10 group-hover:border-brand-400/30 transition-colors">
             <Logo className="w-8 h-8" />
           </div>
           <span className="font-bold text-xl tracking-tight text-white hidden md:block group-hover:text-brand-300 transition-colors">Cropfield</span>
         </div>
         
-        {/* Hide Admin button if in Guest Mode to prevent users from trying to access admin */}
-        {!isGuestMode && view !== 'list' && (
+        {view !== 'list' && (
           <button 
             onClick={handleAdminAccessRequest}
             className={`text-sm font-medium transition-colors flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 hover:bg-white/10 ${isAdmin ? 'text-brand-300 border-brand-500/30' : 'text-slate-400 hover:text-white'}`}
@@ -167,10 +142,6 @@ const App: React.FC = () => {
             guest={currentGuest} 
             onClose={handleCloseBadge} 
           />
-        )}
-
-        {view === 'final' && (
-          <FinalScreen />
         )}
 
         {view === 'list' && (

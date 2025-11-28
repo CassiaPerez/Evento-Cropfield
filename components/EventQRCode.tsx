@@ -10,7 +10,6 @@ export const EventQRCode: React.FC<EventQRCodeProps> = ({ onSimulateScan }) => {
 
   // Get current URL or default to localhost for demo
   const currentUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-  const isLocalhost = currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1');
   const checkInUrl = `${currentUrl}?mode=checkin`;
   
   // High res QR for printing
@@ -72,16 +71,6 @@ export const EventQRCode: React.FC<EventQRCodeProps> = ({ onSimulateScan }) => {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center animate-fade-in w-full max-w-4xl">
       
-      {isLocalhost && (
-        <div className="w-full max-w-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 px-4 py-3 rounded-lg mb-8 text-sm flex items-center gap-3 text-left">
-           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-           <div>
-             <strong>Atenção: Você está em Localhost.</strong><br/>
-             O QR Code abaixo aponta para este computador. Para que outros usuários acessem pelo celular, publique este projeto (Vercel, Netlify, etc).
-           </div>
-        </div>
-      )}
-
       <div className="mb-8 flex flex-col items-center">
         <Logo className="w-24 h-24 mb-6 drop-shadow-2xl" />
         
@@ -108,11 +97,6 @@ export const EventQRCode: React.FC<EventQRCodeProps> = ({ onSimulateScan }) => {
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-4">
-          <div className="text-left bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-             <p className="text-xs text-slate-400 mb-1">Link de Check-in:</p>
-             <p className="text-brand-300 font-mono text-xs break-all">{checkInUrl}</p>
-          </div>
-
           <button 
             onClick={onSimulateScan}
             className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-brand-600/30 flex items-center justify-center gap-3 w-full md:w-64 transform hover:scale-[1.02]"
@@ -130,6 +114,11 @@ export const EventQRCode: React.FC<EventQRCodeProps> = ({ onSimulateScan }) => {
           </button>
         </div>
       </div>
+
+      <p className="text-slate-400 max-w-md text-sm mb-6">
+        Este QR Code utiliza o link atual da página: <br/>
+        <span className="text-brand-400 font-mono text-xs">{currentUrl}</span>
+      </p>
     </div>
   );
 };

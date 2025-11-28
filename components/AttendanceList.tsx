@@ -18,6 +18,46 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({ guests, onBack, 
     );
   }, [guests, searchTerm]);
 
+  const handleExportCSV = () => {
+    if (guests.length === 0) return;
+
+    // Define CSV Headers
+    const headers = ['ID', 'Nome', 'Cargo', 'Horário Check-in', 'Mensagem Boas-vindas'];
+    
+    // Process Data
+    const csvRows = guests.map(guest => {
+      const dateStr = new Date(guest.checkInTime).toLocaleString('pt-BR');
+      // Escape strings to handle commas and quotes inside the text
+      const escape = (text: string) => `"${text.replace(/"/g, '""')}"`;
+      
+      return [
+        escape(guest.id),
+        escape(guest.name),
+        escape(guest.role),
+        escape(dateStr),
+        escape(guest.welcomeMessage)
+      ].join(',');
+    });
+
+    // Combine Headers and Rows
+    const csvContent = [headers.join(','), ...csvRows].join('\n');
+
+    // Create Blob with BOM for Excel compatibility (UTF-8)
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    // Trigger Download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `lista_presenca_cropfield_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="w-full max-w-4xl animate-fade-in flex flex-col h-[80vh]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -50,6 +90,16 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({ guests, onBack, 
           </div>
 
           <div className="flex gap-2">
+            <button 
+                onClick={handleExportCSV}
+                disabled={guests.length === 0}
+                className="px-4 py-2 rounded-lg bg-emerald-900/30 hover:bg-emerald-800/50 text-emerald-400 text-sm transition-colors border border-emerald-800/50 whitespace-nowrap flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Exportar para Excel/CSV"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span className="hidden sm:inline">Exportar</span>
+            </button>
+
             <button 
                 onClick={onBack}
                 className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors border border-slate-700 whitespace-nowrap flex items-center justify-center gap-2"
